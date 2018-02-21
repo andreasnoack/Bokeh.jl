@@ -5,7 +5,7 @@ plotfile("display.html")
 x = linspace(0, 2pi)
 
 # plot returns a Plot object
-myplot = plot(x, sin(x))
+myplot = plot(x, sin.(x))
 # which can then be displayed with
 showplot(myplot)
 
@@ -20,7 +20,7 @@ html = renderplot(myplot)
 println(html[1:100], "...")
 
 # however bokeh.jl also keeps a reference to the current plot, which you can access
-plot(x, cos(x))
+plot(x, cos.(x))
 showplot(curplot())
 
 # for convienience there's a shorthand for this:

@@ -53,7 +53,7 @@ function _genmodels(p::Plot)
 
     for (i, loc, sym) in [(0, :below, :x), (1, :left, :y)]
         @eval begin
-            tick_type, tickform_type = _axis_type(getfield($p, symbol($"$(sym)_axis_type")))
+            tick_type, tickform_type = _axis_type(getfield($p, Symbol($"$(sym)_axis_type")))
 
             tick = Bokehjs.Ticker(tick_type)
             tickform = Bokehjs.TickFormatter(tickform_type)
@@ -66,7 +66,7 @@ function _genmodels(p::Plot)
 
             push!($renderers, axis)
             push!($renderers, grid)
-            $axes[symbol($"$loc")] = [axis]
+            $axes[Symbol($"$loc")] = [axis]
         end
     end
 
@@ -124,10 +124,10 @@ function _obdict(ob::Bokehjs.PlotObject, doc::Bokehjs.UUID)
 
     for name in extra_attrs[2:end]
         in(name, special) && continue
-        ob.(name) == Bokehjs.omit && continue
+        getfield(ob, name) == Bokehjs.omit && continue
         key = string(name)
         # key = begingswith(key, "_") ? key[2:end] : key
-        attrs[key] = ob.(name)
+        attrs[key] = getfield(ob, name)
     end
 
     d["attributes"] = attrs
@@ -144,7 +144,7 @@ function _gettemplate(template::AbstractString,
                       path::Union{AbstractString, Void}=nothing)
     path = path == nothing ? _get_resources_dir() : path
     fname = joinpath(path, template)
-    open(readall, fname, "r")
+    open(readstring, fname, "r")
 end
 
 function _bokehjs_paths(minified::Bool=true)

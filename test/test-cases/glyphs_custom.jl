@@ -6,7 +6,7 @@ Bokeh.debug(true)
 plotfile("glyphs_custom.html")
 
 x = linspace(0, 2pi, 10)
-y = 1 + 0.5sin(x)
+y = 1 .+ 0.5 .* sin.(x)
 # you can get a list of markers from https://github.com/bokeh/bokeh/blob/master/bokeh/models/markers.py
 glyph_with_everything = Glyph(:DiamondCross, 
 							  linecolor="red", 

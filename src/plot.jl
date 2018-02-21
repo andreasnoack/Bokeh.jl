@@ -1,20 +1,16 @@
-if VERSION < v"0.4-"
-    using Dates
-else
-    using Base.Dates
-end
+using Base.Dates
 
-typealias URange Union{Union{Range, UnitRange}}
+const URange = Union{Union{Range, UnitRange}}
 
-typealias DTArray Union{AbstractMatrix{DateTime}, AbstractMatrix{Date},
+const DTArray = Union{AbstractMatrix{DateTime}, AbstractMatrix{Date},
                         AbstractVector{DateTime}, AbstractVector{Date}}
 
-typealias GlyphTypes Union{AbstractString, Glyph, Vector{Glyph}}
+const GlyphTypes = Union{AbstractString, Glyph, Vector{Glyph}}
 
 const EPOCH = DateTime(1970, 1, 1)
 
 unixtime(d::Date) = unixtime(convert(DateTime, d))
-unixtime(d::DateTime) = Int(d - EPOCH)
+unixtime(d::DateTime) = Dates.value(d - EPOCH)
 
 ## getglyphs methods
 getglyphs(styles::AbstractString, count::Int64) =
@@ -29,15 +25,15 @@ getglyphs(glyphs::Vector{Glyph}, count::Int64) =
 ## Plot methods
 plot(f::Function, args...;kwargs...) = plot([f], args...; kwargs...)
 
-function plot(fs::Vector{Function}, rng::URange, args...;kwargs...)
+function plot(fs::Vector{<:Function}, rng::URange, args...;kwargs...)
     stop = isdefined(rng, :stop) ? rng.stop : rng.len
     plot(fs, rng.start, stop, args...; kwargs...)
 end
 
-function plot(fs::Vector{Function}, start::Real=-10, stop::Real=10, args...;
+function plot(fs::Vector{<:Function}, start::Real=-10, stop::Real=10, args...;
               counteval::Int=COUNTEVAL, kwargs...)
     x = linspace(start, stop, counteval)
-    y = Array(Float64, counteval, length(fs))
+    y = Matrix{Float64}(counteval, length(fs))
     for (i, f) in enumerate(fs)
         y[:, i] = map(f, x)
     end
@@ -61,9 +57,9 @@ function plot(x::RealArray, y::Vector{Vector}, args...; kwargs...)
     plot(x, y, args...; kwargs...)
 end
 
-function plot{T<:AbstractVector}(x::Vector{T}, y::Vector{Vector},
-                                   styles::GlyphTypes=DEFAULT_GLYPHS_STR;
-                                   autoopen::Bool=AUTOOPEN, kwargs...)
+function plot(x::Vector{T}, y::Vector{Vector},
+              styles::GlyphTypes=DEFAULT_GLYPHS_STR;
+              autoopen::Bool=AUTOOPEN, kwargs...) where {T<:AbstractVector}
     hold_val = HOLD
 
     # clear CURPLOT if hold was previously false

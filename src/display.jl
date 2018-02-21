@@ -1,22 +1,22 @@
 function openhtmldoc(filepath::AbstractString)
     NOSHOW && return
-    @linux_only run(`xdg-open $filepath`)
-    @osx_only run(`open $filepath`)
-    @windows_only run(`cmd /c start $filepath`)
+    is_linux() && run(`xdg-open $filepath`)
+    is_apple() && run(`open $filepath`)
+    is_windows() && run(`cmd /c start $filepath`)
 end
 
 _basic(p::Plot) = "Plot(\"$(p.title)\" with $(length(p.datacolumns)) datacolumns)"
 
-function Base.writemime(io::IO, ::MIME"text/html", p::Plot)
+function Base.show(io::IO, ::MIME"text/html", p::Plot)
     print(io, renderplot(p, true))
     print(io, "<p>", _basic(p), "</p>")
 end
 
-Base.writemime(io::IO, ::MIME"text/plain", p::Plot) = print(io, _basic(p))
+Base.show(io::IO, ::MIME"text/plain", p::Plot) = print(io, _basic(p))
 
 # If in the notebook, activate a notebook display
 if !isdefined(Main, :IJulia)
-    type BokehDisplay <: Display; end
+    mutable struct BokehDisplay <: Display; end
     pushdisplay(BokehDisplay())
 
     function Base.display(d::BokehDisplay, p::Plot)

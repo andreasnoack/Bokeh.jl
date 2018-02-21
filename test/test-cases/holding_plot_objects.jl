@@ -1,13 +1,13 @@
 using Bokeh
 
 x = linspace(-3pi, 3pi)
-y1 = cos(x)
+y1 = cos.(x)
 plot(x,y1)
 
 # hold works very similarly to hold in other plotting libraries
 hold(true)
 
-y2 = sin(x)./x
+y2 = sin.(x) ./ x
 plot(x, y2, "r")
 showplot("holding.html")
 # under the bonnet it's just causing the plot function not to overwrite

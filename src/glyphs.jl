@@ -66,7 +66,7 @@ function Base.show(io::IO, g::Bokehjs.Glyph)
     print(io, "Glyph(", join(features, ", "), ")")
 end
 
-type BokehDataSet
+mutable struct BokehDataSet
     data::Dict{Symbol, Vector}
     glyph::Glyph
     legend::NullString
@@ -82,7 +82,7 @@ function BokehDataSet(xdata::RealVect, ydata::RealVect, args...)
     BokehDataSet(data, args...)
 end
 
-type Plot
+mutable struct Plot
     datacolumns::Vector{BokehDataSet}
     tools::Vector{Symbol}
     filename::AbstractString
@@ -97,7 +97,7 @@ end
 # both the string and the reversed string will be tried, eg. "ox" is equivilent
 # to "xo"
 const STRINGTOKENS = let
-    temp = Dict{ASCIIString,Dict{Symbol,Any}}(
+    temp = Dict{String,Dict{Symbol,Any}}(
             "--" => Dict(:dash      => [4, 4]),
             "-." => Dict(:dash      => [1, 4, 2]),
             "ox" => Dict(:glyphtype => :CircleX),

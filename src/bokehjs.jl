@@ -2,44 +2,44 @@ using JSON
 
 module Bokehjs
 
-typealias RealVect Union{AbstractVector{Int}, AbstractVector{Float64}}
-typealias RealMat Union{AbstractMatrix{Int}, AbstractMatrix{Float64}}
-typealias RealArray Union{RealMat, RealVect}
+const RealVect  = Union{AbstractVector{Int}, AbstractVector{Float64}}
+const RealMat   = Union{AbstractMatrix{Int}, AbstractMatrix{Float64}}
+const RealArray = Union{RealMat, RealVect}
 # would be nice to parameterize, but more important to constrain dims to 1 or 2
-# typealias RealArray{N} Union{AbstractArray{Int, N}, AbstractArray{Float64, N}}
+# RealArray{N} = Union{AbstractArray{Int, N}, AbstractArray{Float64, N}}
 
 # like nothing except omitted from json rather than being null
-type Omit
+mutable struct Omit
     v::AbstractString
     Omit() = new("__omitted from json__")
 end
 const omit = Omit()
 
 # in case we want to restrict value types in future:
-typealias BkAny Any # Union{Dict, Array, AbstractString, Number, Bool, Void, UUID}
-typealias NullDict Union{Void, Dict{AbstractString, BkAny}}
-typealias OmitDict Union{Omit, Dict{Symbol, BkAny}}
-typealias NullString Union{Void, AbstractString}
-typealias OmitString Union{Omit, AbstractString}
-typealias NullSymbol Union{Void, Symbol}
-typealias OmitSymbol Union{Omit, Symbol}
-typealias NullFloat Union{Float64, Void}
-typealias NullInt Union{Int, Void}
+const BkAny      = Any # Union{Dict, Array, AbstractString, Number, Bool, Void, UUID}
+const NullDict   = Union{Void, Dict{AbstractString, BkAny}}
+const OmitDict   = Union{Omit, Dict{Symbol, BkAny}}
+const NullString = Union{Void, AbstractString}
+const OmitString = Union{Omit, AbstractString}
+const NullSymbol = Union{Void, Symbol}
+const OmitSymbol = Union{Omit, Symbol}
+const NullFloat  = Union{Float64, Void}
+const NullInt    = Union{Int, Void}
 
-uuid4 = Base.Random.uuid4
-UUID = Base.Random.UUID
+const uuid4 = Base.Random.uuid4
+const UUID  = Base.Random.UUID
 
-abstract PlotObject
+abstract type PlotObject end
 
-abstract BkRange <: PlotObject
+abstract type BkRange <: PlotObject end
 
-typealias NullBkRange Union{Void, BkRange}
+const NullBkRange = Union{Void, BkRange}
 
-abstract Renderer <: PlotObject
+abstract type Renderer <: PlotObject end
 
-abstract Axis <: PlotObject
+abstract type Axis <: PlotObject end
 
-type TypeID
+mutable struct TypeID
     plotob::Union{PlotObject, Void}
 end
 
@@ -47,7 +47,7 @@ function TypeID()
     TypeID(nothing)
 end
 
-type Plot <: PlotObject
+mutable struct Plot <: PlotObject
     uuid::UUID
     title::AbstractString
     tools::Vector{BkAny}
@@ -64,7 +64,7 @@ type Plot <: PlotObject
     data_sources::Vector{BkAny}
 end
 
-type ColumnDataSource <: PlotObject
+mutable struct ColumnDataSource <: PlotObject
     uuid::UUID
     column_names::Vector{Symbol}
     selected::Vector{Any}
@@ -82,7 +82,7 @@ function ColumnDataSource(data::Dict{Symbol, Vector})
                      data)
 end
 
-type DataRange1d <: BkRange
+mutable struct DataRange1d <: BkRange
     uuid::UUID
     sources::Vector{BkAny}
 end
@@ -94,7 +94,7 @@ function DataRange1d(cdss::Vector{ColumnDataSource}, columns::Vector{AbstractStr
     DataRange1d(uuid4(), sources)
 end
 
-type TickFormatter <: PlotObject
+mutable struct TickFormatter <: PlotObject
     uuid::UUID
     _type_name::Symbol
     format::OmitDict
@@ -107,14 +107,14 @@ type TickFormatter <: PlotObject
     end
 end
 
-type Ticker <: PlotObject
+mutable struct Ticker <: PlotObject
     uuid::UUID
     _type_name::Symbol
     num_minor_ticks::Int64
     Ticker(name::Symbol) = new(uuid4(), name, 5)
 end
 
-type LinearAxis <: Axis
+mutable struct LinearAxis <: Axis
     uuid::UUID
     dimension::Int
     bounds::AbstractString
@@ -134,7 +134,7 @@ function LinearAxis(dimension::Int, tf::TickFormatter, t::Ticker, plot::Plot)
                TypeID(plot))
 end
 
-type Grid <: Renderer
+mutable struct Grid <: Renderer
     uuid::UUID
     dimension::Int
     plot::TypeID
@@ -145,7 +145,7 @@ function Grid(dimension::Int, plot::Plot, ticker::Ticker)
     Grid(uuid4(), dimension, TypeID(plot), TypeID(ticker))
 end
 
-type Legend <: Renderer
+mutable struct Legend <: Renderer
     uuid::UUID
     plot::TypeID
     legends::Vector{Tuple}
@@ -167,7 +167,7 @@ function Legend(plot::Plot, legends::Vector{Tuple}, orientation::NullSymbol)
            orientation)
 end
 
-type Glyph <: PlotObject
+mutable struct Glyph <: PlotObject
     uuid::UUID
     _type_name::Symbol
     line_color::OmitDict
@@ -181,7 +181,7 @@ type Glyph <: PlotObject
     y::Dict{Symbol, Symbol}
 end
 
-type GlyphRenderer <: Renderer
+mutable struct GlyphRenderer <: Renderer
     uuid::UUID
     data_source::TypeID
     nonselection_glyph::TypeID
@@ -191,7 +191,7 @@ type GlyphRenderer <: Renderer
     server_data_source::NullDict
 end
 
-typealias NullGlyph Union{Void, Glyph}
+const NullGlyph = Union{Void, Glyph}
 
 function GlyphRenderer(coldata::ColumnDataSource, nonsel_g::NullGlyph,
                        sel_g::NullGlyph, glyph::Glyph)
@@ -205,7 +205,7 @@ function GlyphRenderer(coldata::ColumnDataSource, nonsel_g::NullGlyph,
                  )
 end
 
-type Metatool <: PlotObject
+mutable struct Metatool <: PlotObject
     uuid::UUID
     _type_name::AbstractString
     plot::TypeID
@@ -271,7 +271,7 @@ function Plot(plot::Plot,
         )
 end
 
-type PlotContext <: PlotObject
+mutable struct PlotContext <: PlotObject
     uuid::UUID
     children::Vector{TypeID}
 end
@@ -283,16 +283,16 @@ end
 end  # module
 
 # extract useful types from Bokehjs module
-typealias RealVect Bokehjs.RealVect
-typealias RealMat Bokehjs.RealMat
-typealias RealArray Bokehjs.RealArray
-typealias BkAny Bokehjs.BkAny
-typealias omit Bokehjs.omit
-typealias Glyph Bokehjs.Glyph
-typealias NullString Bokehjs.NullString
-typealias NullSymbol Bokehjs.NullSymbol
-typealias NullFloat Bokehjs.NullFloat
-typealias NullInt Bokehjs.NullInt
+const RealVect   = Bokehjs.RealVect
+const RealMat    = Bokehjs.RealMat
+const RealArray  = Bokehjs.RealArray
+const BkAny      = Bokehjs.BkAny
+const omit       = Bokehjs.omit
+const Glyph      = Bokehjs.Glyph
+const NullString = Bokehjs.NullString
+const NullSymbol = Bokehjs.NullSymbol
+const NullFloat  = Bokehjs.NullFloat
+const NullInt    = Bokehjs.NullInt
 
 JSON.lower(uuid::Bokehjs.UUID) = string(uuid)
 
@@ -303,4 +303,4 @@ function JSON.lower(tid::Bokehjs.TypeID)
     Dict{AbstractString, BkAny}("type" => obtype, "id" => tid.plotob.uuid)
 end
 
-JSON.lower{T<:Bokehjs.PlotObject}(::Type{T}) = string(T.name.name)
+JSON.lower(::Type{T}) where {T<:Bokehjs.PlotObject} = string(T.name.name)
